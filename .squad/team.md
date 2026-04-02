@@ -18,6 +18,7 @@
 | Hockney | DevOps & Infra | CI/CD, Docker, deployment, GitHub Actions | Active |
 | Verbal | Tech Lead | Architecture, code review, decisions, priorities | Active |
 
+
 ## Project Context
 
 - **Project:** squad-demo
