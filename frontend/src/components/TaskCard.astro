@@ -1,0 +1,102 @@
+---
+export interface Props {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+  assignee: string;
+}
+
+const { id, title, description, status, assignee } = Astro.props;
+
+const statusColors: Record<string, { bg: string; text: string; label: string }> = {
+  todo: { bg: "#1e3a5f", text: "#60a5fa", label: "To Do" },
+  "in-progress": { bg: "#422006", text: "#fbbf24", label: "In Progress" },
+  done: { bg: "#14532d", text: "#4ade80", label: "Done" },
+};
+
+const badge = statusColors[status] ?? statusColors.todo;
+---
+
+<div class="card" data-task-id={id} data-status={status}>
+  <div class="card-header">
+    <span class="badge" style={`background:${badge.bg}; color:${badge.text};`}>{badge.label}</span>
+    {assignee && <span class="assignee">👤 {assignee}</span>}
+  </div>
+  <h3 class="card-title">{title}</h3>
+  {description && <p class="card-desc">{description}</p>}
+  <div class="card-actions">
+    {status !== "done" && (
+      <button class="btn btn-advance" data-action="advance" data-id={id}>
+        {status === "todo" ? "▶ Start" : "✓ Complete"}
+      </button>
+    )}
+    <button class="btn btn-delete" data-action="delete" data-id={id}>✕</button>
+  </div>
+</div>
+
+<style>
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: border-color 0.2s;
+  }
+  .card:hover {
+    border-color: #475569;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+  }
+  .badge {
+    padding: 0.15rem 0.6rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.65rem;
+  }
+  .assignee {
+    color: #94a3b8;
+  }
+  .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .card-desc {
+    font-size: 0.85rem;
+    color: #94a3b8;
+  }
+  .card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+  .btn {
+    border: none;
+    border-radius: 0.375rem;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.15s;
+  }
+  .btn:hover {
+    opacity: 0.85;
+  }
+  .btn-advance {
+    background: #2563eb;
+    color: white;
+  }
+  .btn-delete {
+    background: #991b1b;
+    color: #fecaca;
+  }
+</style>

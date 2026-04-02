@@ -1,0 +1,211 @@
+---
+import Layout from "../layouts/Layout.astro";
+import TaskCard from "../components/TaskCard.astro";
+
+const API = "http://localhost:8000";
+
+type Task = {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+  assignee: string;
+};
+
+let tasks: Task[] = [];
+let fetchError = "";
+
+try {
+  const res = await fetch(`${API}/api/tasks`);
+  if (!res.ok) throw new Error(`API returned ${res.status}`);
+  tasks = await res.json();
+} catch (e: any) {
+  fetchError = e.message ?? "Could not reach the API";
+}
+
+const columns = [
+  { key: "todo", label: "To Do", icon: "📌" },
+  { key: "in-progress", label: "In Progress", icon: "🔧" },
+  { key: "done", label: "Done", icon: "✅" },
+];
+---
+
+<Layout title="Task Board – Squad Demo">
+  {fetchError ? (
+    <div class="error">
+      <p><strong>Cannot reach the backend API.</strong></p>
+      <p>Start it with: <code>cd backend && uvicorn app.main:app --reload</code></p>
+      <p class="detail">{fetchError}</p>
+    </div>
+  ) : (
+    <>
+      <!-- New Task Form -->
+      <form id="new-task-form" class="new-task-form">
+        <input type="text" name="title" placeholder="Task title…" required class="input" />
+        <input type="text" name="description" placeholder="Description (optional)" class="input" />
+        <input type="text" name="assignee" placeholder="Assignee" class="input input-sm" />
+        <button type="submit" class="btn-add">+ Add Task</button>
+      </form>
+
+      <!-- Kanban Board -->
+      <div class="board">
+        {columns.map((col) => (
+          <section class="column">
+            <h2 class="column-title">{col.icon} {col.label}
+              <span class="count">{tasks.filter((t) => t.status === col.key).length}</span>
+            </h2>
+            <div class="column-cards">
+              {tasks
+                .filter((t) => t.status === col.key)
+                .map((t) => (
+                  <TaskCard {...t} />
+                ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </>
+  )}
+</Layout>
+
+<script define:vars={{ API }}>
+  // --- Client-side interactivity ---
+
+  const form = document.getElementById("new-task-form");
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const body = {
+      title: fd.get("title"),
+      description: fd.get("description") || "",
+      assignee: fd.get("assignee") || "",
+    };
+    const res = await fetch(`${API}/api/tasks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) location.reload();
+  });
+
+  document.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+
+    if (action === "delete") {
+      await fetch(`${API}/api/tasks/${id}`, { method: "DELETE" });
+      location.reload();
+    }
+
+    if (action === "advance") {
+      const card = btn.closest("[data-status]");
+      const current = card?.dataset.status;
+      const next = current === "todo" ? "in-progress" : "done";
+      await fetch(`${API}/api/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: next }),
+      });
+      location.reload();
+    }
+  });
+</script>
+
+<style>
+  .error {
+    background: #450a0a;
+    border: 1px solid #991b1b;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .error code {
+    background: #1e293b;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+  }
+  .error .detail {
+    color: #f87171;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+  }
+
+  .new-task-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .input {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    flex: 1;
+    min-width: 140px;
+  }
+  .input:focus {
+    outline: none;
+    border-color: #2563eb;
+  }
+  .input-sm {
+    flex: 0.5;
+  }
+  .btn-add {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-add:hover {
+    background: #1d4ed8;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .board {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .column {
+    min-height: 200px;
+  }
+  .column-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .count {
+    background: #334155;
+    color: #94a3b8;
+    font-size: 0.7rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+  }
+  .column-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+</style>
