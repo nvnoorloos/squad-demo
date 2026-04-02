@@ -28,3 +28,9 @@ class Task(BaseModel):
     description: str
     status: TaskStatus
     assignee: str
+
+
+class TaskStats(BaseModel):
+    total: int
+    by_status: dict[str, int]
+    by_assignee: dict[str, int]

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.models import Task, TaskCreate, TaskUpdate
+from app.models import Task, TaskCreate, TaskStats, TaskUpdate
 from app import store
 
 app = FastAPI(title="Squad Demo – Task Board API", version="0.1.0")
@@ -22,6 +22,12 @@ def startup():
 @app.get("/api/tasks", response_model=list[Task])
 def list_tasks():
     return store.list_all()
+
+
+@app.get("/api/tasks/stats", response_model=TaskStats)
+def get_task_stats():
+    """Return aggregate task board statistics."""
+    return store.get_stats()
 
 
 @app.get("/api/tasks/{task_id}", response_model=Task)
