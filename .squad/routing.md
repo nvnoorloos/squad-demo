@@ -7,11 +7,26 @@ How to decide who handles what.
 | Work Type | Route To | Examples |
 |-----------|----------|----------|
 | Frontend UI | Keaton | Astro pages, components, CSS, client-side JS, layouts |
-| Backend API | McManus | FastAPI endpoints, Pydantic models, data store, Python |
+| Backend API | McManus | FastAPI endpoints, Pydantic models, data store, Python, REST API, /api/ routes |
 | Testing | Fenster | Unit tests, integration tests, API tests, edge cases |
 | Infrastructure | Hockney | Docker, CI/CD, GitHub Actions, deployment, dev tooling |
 | Architecture & Review | Verbal | Design decisions, code review, trade-offs, priorities |
 | Session logging | Scribe | Automatic — never needs routing |
+
+## Module Ownership
+
+| Path Pattern | Primary Owner | Notes |
+|-------------|---------------|-------|
+| `frontend/src/pages/` | Keaton | Astro page routes |
+| `frontend/src/components/` | Keaton | Astro UI components |
+| `frontend/src/layouts/` | Keaton | Astro layout templates |
+| `frontend/public/` | Keaton | Static assets |
+| `backend/app/main.py` | McManus | FastAPI app and endpoint definitions |
+| `backend/app/models.py` | McManus | Pydantic data models |
+| `backend/app/store.py` | McManus | Data storage layer |
+| `backend/` | McManus | All Python backend code |
+| `.github/workflows/` | Hockney | CI/CD pipeline configuration |
+| `Dockerfile*` | Hockney | Container configuration |
 
 ## Issue Routing
 
